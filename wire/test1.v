@@ -5,10 +5,11 @@ module test1;
     reg a;
     // Hard-wired to 1
     wire b = 1;
-    // Boolean logic - takes a time step to propagate.
-    wire c = a & b;
-    // Direct assignment - propagates immediately.
+    wire c;
+    // Direct assignment - likely propagates immediately.
     wire d = a;
+    // Boolean logic - may or may not propagate immediately.
+    assign c = a & b;
 
     initial begin 
         a = 0;
@@ -23,10 +24,16 @@ module test1;
         // We change a here.
         a = 1;
         // Notice that d changes immediately (directly wired)
-        // but c doesn't change until a step goes by - time
-        // is required to propagate the Boolean function.
-        $display("[%0t] a: %0d, b: %0d, c: %0d, d: %0d", 
+        // but c doesn't necessarily change. There
+        // is some non-determinist here, likely related to 
+        // the processing of the event queue.
+        $display("DISPLAY 1: [%0t] a: %0d, b: %0d, c: %0d, d: %0d", 
             $time, a, b, c, d);
+        // Here we use $strobe to wait until the end of 
+        // the cycle. SO THE CHANGE TO C IS VISIBLE NOW!
+        $strobe("STROBE 1: [%0t] a: %0d, b: %0d, c: %0d, d: %0d", 
+            $time, a, b, c, d);
+
         #1;
         // Now the propagation has finished and we can see
         // the result of the Boolean expression for c.
